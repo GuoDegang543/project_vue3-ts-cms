@@ -13,7 +13,7 @@ class HYRequest {
   showLoading: boolean
   loading?: LoadingInstance
 
-  constructor(config: HYRequestConfig) {
+  constructor(config: HYRequestConfig<any>) {
     this.instance = axios.create(config)
     this.showLoading = config.showLoading ?? DEFAULT_LOADING
     this.interceptors = config.interceptors
@@ -31,8 +31,6 @@ class HYRequest {
     // 添加所有的实例都有的拦截器
     this.instance.interceptors.request.use(
       (config) => {
-        console.log('所有的实例都有的拦截器，请求拦截成功')
-
         if (this.showLoading) {
           this.loading = ElLoading.service({
             lock: true,
@@ -43,15 +41,12 @@ class HYRequest {
         return config
       },
       (err) => {
-        console.log('所有的实例都有的拦截器，请求拦截失败')
         return err
       }
     )
 
     this.instance.interceptors.response.use(
       (res) => {
-        console.log('所有的实例都有的拦截器，响应拦截成功')
-
         this.loading?.close()
         const data = res.data
         if (data.returnCode === '1001') {
@@ -61,7 +56,6 @@ class HYRequest {
         }
       },
       (err) => {
-        console.log('所有的实例都有的拦截器，响应拦截失败')
         if (err.response.status === 404) {
           console.log('404的错误')
         }
@@ -70,7 +64,7 @@ class HYRequest {
     )
   }
 
-  request<T>(config: HYRequestConfig): Promise<T> {
+  request<T>(config: HYRequestConfig<T>): Promise<T> {
     return new Promise((resolve, reject) => {
       // 单个请求对请求config的处理
       if (config.interceptors?.requestInterceptor) {
@@ -106,19 +100,19 @@ class HYRequest {
     })
   }
 
-  get<T>(config: HYRequestConfig): Promise<T> {
+  get<T>(config: HYRequestConfig<T>): Promise<T> {
     return this.request<T>({ ...config, method: 'GET' })
   }
 
-  post<T>(config: HYRequestConfig): Promise<T> {
+  post<T>(config: HYRequestConfig<T>): Promise<T> {
     return this.request<T>({ ...config, method: 'POST' })
   }
 
-  delete<T>(config: HYRequestConfig): Promise<T> {
+  delete<T>(config: HYRequestConfig<T>): Promise<T> {
     return this.request<T>({ ...config, method: 'DELETE' })
   }
 
-  patch<T>(config: HYRequestConfig): Promise<T> {
+  patch<T>(config: HYRequestConfig<T>): Promise<T> {
     return this.request<T>({ ...config, method: 'PATCH' })
   }
 }
